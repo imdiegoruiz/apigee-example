@@ -33,9 +33,9 @@ jobs:
         id: auth
         uses: google-github-actions/auth@v0
         with:
-         # token_format: "access_token"
-         # create_credentials_file: true
-         # activate_credentials_file: true
+          token_format: "access_token"
+          create_credentials_file: true
+          activate_credentials_file: true
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_POOL_ID }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
       - name: Set up Cloud SDK
@@ -45,5 +45,9 @@ jobs:
       - name: Upload API Proxy Bundle
         id: upload
         run: "echo \"::set-output name=apigee-revision::$(curl --fail -X POST -H \"Content-Type: multipart/form-data\" -H \"Authorization: Bearer ${{steps.auth.outputs.access_token}}\" -F \"file=@proxy.zip\" \"https://apigee.googleapis.com/v1/organizations/${{secrets.APIGEE_ORG}}/apis?action=import&name=hello-world\" --silent | jq --raw-output .revision)\""
+      - name: Testprint
+        run: "echo ${{steps.auth.outputs.access_token}}"
+      - name: Testprint2
+        run: "echo ${{steps.upload.outputs.apigee-revision}}"
       - name: Deploy Revision
-        run: "curl --fail -X POST -H \"Authorization: Bearer ${{steps.auth.outputs.access_token}}\" \"https://apigee.googleapis.com/v1/organizations/${{ secrets.APIGEE_ORG }}/environments/eval/apis/hello-world/revisions/${{steps.upload.outputs.apigee-revision}}/deployments?override=true\""
+        run: "curl --fail -X POST -H \"Authorization: Bearer c\" \"https://apigee.googleapis.com/v1/organizations/${{ secrets.APIGEE_ORG }}/environments/eval/apis/hello-world/revisions/${{steps.upload.outputs.apigee-revision}}/deployments?override=true\""
