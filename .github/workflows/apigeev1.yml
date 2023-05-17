@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI
+name: Deploy to Apigee V1
 
 # Controls when the workflow will run
 on:
@@ -25,21 +25,20 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # Runs a single command using the runners shell
-
-      - name: auth with Google
+      - name: auth with google
         id: auth
-        uses: google-github-actions/auth@v0
+        uses: google-github-actions/auth@v1.1.1
         with:
-         # token_format: "access_token"
-         # create_credentials_file: true
-         # activate_credentials_file: true
+          token_format: "access_token"
+          create_credentials_file: true
+          activate_credentials_file: true
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_POOL_ID }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
-      #- name: Set up Cloud SDK
-      #  uses: google-github-actions/setup-gcloud@v0.3.0
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0.3.0
       - name: Create API bundle
         run: zip -r proxy.zip apiproxy
       - name: Upload API Proxy Bundle
@@ -47,4 +46,3 @@ jobs:
         run: "echo \"::set-output name=apigee-revision::$(curl --fail -X POST -H \"Content-Type: multipart/form-data\" -H \"Authorization: Bearer ${{steps.auth.outputs.access_token}}\" -F \"file=@proxy.zip\" \"https://apigee.googleapis.com/v1/organizations/${{secrets.APIGEE_ORG}}/apis?action=import&name=hello-world\" --silent | jq --raw-output .revision)\""
       - name: Deploy Revision
         run: "curl --fail -X POST -H \"Authorization: Bearer ${{steps.auth.outputs.access_token}}\" \"https://apigee.googleapis.com/v1/organizations/${{ secrets.APIGEE_ORG }}/environments/eval/apis/hello-world/revisions/${{steps.upload.outputs.apigee-revision}}/deployments?override=true\""
-  
