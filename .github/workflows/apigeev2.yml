@@ -50,4 +50,5 @@ jobs:
       - name: Testprint2
         run: "echo ${{steps.upload.outputs.apigee-revision}}"
       - name: Deploy Revision
-        run: "curl --fail -X POST -H \"Authorization: Bearer c\" \"https://apigee.googleapis.com/v1/organizations/${{ secrets.APIGEE_ORG }}/environments/eval/apis/hello-world/revisions/${{steps.upload.outputs.apigee-revision}}/deployments?override=true\""
+        #run: "curl --fail -X POST -H \"Authorization: Bearer c\" \"https://apigee.googleapis.com/v1/organizations/${{ secrets.APIGEE_ORG }}/environments/eval/apis/hello-world/revisions/${{steps.upload.outputs.apigee-revision}}/deployments?override=true\""
+        run: "curl --fail -X POST -H \"Authorization: Bearer c\" \"https://apigee.googleapis.com/v1/organizations/${{ secrets.APIGEE_ORG }}/environments/eval/apis/hello-world/revisions/0/deployments?override=true\""
