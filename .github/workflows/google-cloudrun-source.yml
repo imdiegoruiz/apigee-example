@@ -1,95 +1,50 @@
-# This workflow will deploy source code on Cloud Run when a commit is pushed to the "main" branch
-#
-# Overview:
-#
-# 1. Authenticate to Google Cloud
-# 2. Deploy it to Cloud Run
-#
-# To configure this workflow:
-#
-# 1. Ensure the required Google Cloud APIs are enabled:
-#
-#    Cloud Run            run.googleapis.com
-#    Cloud Build          cloudbuild.googleapis.com
-#    Artifact Registry    artifactregistry.googleapis.com
-#
-# 2. Create and configure Workload Identity Federation for GitHub (https://github.com/google-github-actions/auth#setting-up-workload-identity-federation)
-#
-# 3. Ensure the required IAM permissions are granted
-#
-#    Cloud Run
-#      roles/run.admin
-#      roles/iam.serviceAccountUser     (to act as the Cloud Run runtime service account)
-#
-#    Cloud Build
-#      roles/cloudbuild.builds.editor
-#
-#    Cloud Storage
-#      roles/storage.objectAdmin
-#
-#    Artifact Registry
-#      roles/artifactregistry.admin     (project or repository level)
-#
-#    NOTE: You should always follow the principle of least privilege when assigning IAM roles
-#
-# 4. Create GitHub secrets for WIF_PROVIDER and WIF_SERVICE_ACCOUNT
-#
-# 5. Change the values for the SERVICE and REGION environment variables (below).
-#
-# For more support on how to run this workflow, please visit https://github.com/marketplace/actions/deploy-to-cloud-run
-#
-# Further reading:
-#   Cloud Run runtime service account   - https://cloud.google.com/run/docs/securing/service-identity
-#   Cloud Run IAM permissions           - https://cloud.google.com/run/docs/deploying-source-code#permissions_required_to_deploy
-#   Cloud Run builds from source        - https://cloud.google.com/run/docs/deploying-source-code
-#   Principle of least privilege        - https://cloud.google.com/blog/products/identity-security/dont-get-pwned-practicing-the-principle-of-least-privilege
+# This is a basic workflow to help you get started with Actions
 
-name: Deploy to Cloud Run from Source
+name: Deploy to Apigee V1
 
+# Controls when the workflow will run
 on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
     branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
-env:
-  PROJECT_ID: YOUR_PROJECT_ID # TODO: update Google Cloud project id
-  SERVICE: YOUR_SERVICE_NAME # TODO: update Cloud Run service name
-  REGION: YOUR_SERVICE_REGION # TODO: update Cloud Run service region
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  deploy:
-    # Add 'id-token' with the intended permissions for workload identity federation
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
     permissions:
       contents: 'read'
       id-token: 'write'
-
-    runs-on: ubuntu-latest
+    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
 
-      - name: Google Auth
-        id: auth
-        uses: 'google-github-actions/auth@v0'
+      # Runs a single command using the runners shell
+      - name: Run a one-line script
+        run: echo Hello, world!
+      - id: auth
+        uses: google-github-actions/auth@v1.1.1
         with:
-          workload_identity_provider: '${{ secrets.WORKLOAD_IDENTITY_POOL_ID }}' # e.g. - projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider
-          service_account: '${{ secrets.SERVICE_ACCOUNT }}' # e.g. - my-service-account@my-project.iam.gserviceaccount.com
-
-      # NOTE: Alternative option - authentication via credentials json
-      # - name: Google Auth
-      #   id: auth
-      #   uses: 'google-github-actions/auth@v0'
-      #   with:
-      #     credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
-
-      - name: Deploy to Cloud Run
-        id: deploy
-        uses: google-github-actions/deploy-cloudrun@v0
-        with:
-          service: ${{ env.SERVICE }}
-          region: ${{ env.REGION }}
-          # NOTE: If required, update to the appropriate source folder
-          source: ./
-
-      # If required, use the Cloud Run url output in later steps
-      - name: Show Output
-        run: echo ${{ steps.deploy.outputs.url }}
+          token_format: "access_token"
+          create_credentials_file: true
+          activate_credentials_file: true
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_POOL_ID }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0.3.0
+      - name: Create API bundle
+        run: zip -r proxy.zip apiproxy
+      - name: Upload API Proxy Bundle
+        id: upload
+        run: "echo \"::set-output name=apigee-revision::$(curl --fail -X POST -H \"Content-Type: multipart/form-data\" -H \"Authorization: Bearer ${{steps.auth.outputs.access_token}}\" -F \"file=@proxy.zip\" \"https://apigee.googleapis.com/v1/organizations/${{secrets.APIGEE_ORG}}/apis?action=import&name=hello-world\" --silent | jq --raw-output .revision)\""
+      - name: Deploy Revision
+        run: "curl --fail -X POST -H \"Authorization: Bearer ${{steps.auth.outputs.access_token}}\" \"https://apigee.googleapis.com/v1/organizations/${{ secrets.APIGEE_ORG }}/environments/eval/apis/hello-world/revisions/${{steps.upload.outputs.apigee-revision}}/deployments?override=true\""
+  
