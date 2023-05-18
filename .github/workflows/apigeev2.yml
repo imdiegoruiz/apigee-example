@@ -25,7 +25,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # Runs a single command using the runners shell
 
@@ -45,11 +45,6 @@ jobs:
       - name: Upload API Proxy Bundle
         id: upload
         run: "echo \"::set-output name=apigee-revision::$(curl --fail -X POST -H \"Content-Type: multipart/form-data\" -H \"Authorization: Bearer ${{steps.auth.outputs.access_token}}\" -F \"file=@proxy.zip\" \"https://apigee.googleapis.com/v1/organizations/${{secrets.APIGEE_ORG}}/apis?action=import&name=hello-world\" --silent | jq --raw-output .revision)\""
-      - name: Testprint
-        run: "echo ${{steps.auth.outputs.access_token}}"
-      - name: Testprint2
-        run: "echo ${{steps.upload.outputs.apigee-revision}}"
       - name: Deploy Revision
-        #run: "curl --fail -X POST -H \"Authorization: Bearer c\" \"https://apigee.googleapis.com/v1/organizations/${{ secrets.APIGEE_ORG }}/environments/eval/apis/hello-world/revisions/${{steps.upload.outputs.apigee-revision}}/deployments?override=true\""
         run: "curl \"https://apigee.googleapis.com/v1/organizations/${{ secrets.APIGEE_ORG }}/environments/eval/apis/hello-world/revisions/${{steps.upload.outputs.apigee-revision}}/deployments\" -X POST -H \"Authorization: Bearer ${{steps.auth.outputs.access_token}}\""
         
