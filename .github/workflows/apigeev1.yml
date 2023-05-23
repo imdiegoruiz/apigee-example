@@ -46,7 +46,7 @@ jobs:
       - name: printing
         run: "echo \"${{steps.upload.outputs.apigee-revision}}"
       - name: printingGithuboutpu
-        run: "echo \"${{GITHUB_OUTPUT}}"
+        run: "echo \"${GITHUB_OUTPUT}"
       - name: Deploy Revision
         run: "curl \"https://apigee.googleapis.com/v1/organizations/${{ secrets.APIGEE_ORG }}/environments/eval/apis/hello-world/revisions/${{steps.upload.outputs.apigee-revision}}/deployments\" -X POST -H \"Authorization: Bearer ${{steps.auth.outputs.access_token}}\""
         
