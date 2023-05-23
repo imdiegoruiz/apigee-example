@@ -42,7 +42,7 @@ jobs:
         run: zip -r proxy.zip apiproxy
       - name: Set output
         id: val
-        run: echo "{name}={value}" >> $GITHUB_OUTPUT
+        run: echo "name=diego" >> $GITHUB_OUTPUT
       - name: Print my output
         run: echo ${{steps.val.outputs.name}}
       - name: Upload API Proxy Bundle
