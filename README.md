@@ -1,3 +1,3 @@
 # apigee-example
 
-## Deploy into Apigee 1
+## Deploy api proxy to Apigee using GitHub actions

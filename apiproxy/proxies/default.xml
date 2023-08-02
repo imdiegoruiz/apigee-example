@@ -17,11 +17,7 @@
 
 <ProxyEndpoint name="default">
   <PreFlow name="PreFlow">
-    <Request>
-      <Step>
-        <Name>VA-General</Name>
-      </Step>
-    </Request>
+    <Request/>
     <Response/>
   </PreFlow>
   <Flows/>
