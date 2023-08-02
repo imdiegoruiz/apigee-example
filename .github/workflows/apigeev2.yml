@@ -29,7 +29,7 @@ jobs:
 
       # Runs a single command using the runners shell
 
-      - name: auth with Google
+      - name: Auth with Google
         id: auth
         uses: google-github-actions/auth@v0
         with:
@@ -40,14 +40,10 @@ jobs:
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
       - name: Create API bundle
         run: zip -r proxy.zip apiproxy
-      - name: Set output
-        id: val
-        run: echo "name=diego" >> $GITHUB_OUTPUT
-      - name: Print my output
-        run: echo ${{steps.val.outputs.name}}
       - name: Upload API Proxy Bundle
         id: upload
         run: "echo \"apigee-revision=$(curl --fail -X POST -H \"Content-Type: multipart/form-data\" -H \"Authorization: Bearer ${{steps.auth.outputs.access_token}}\" -F \"file=@proxy.zip\" \"https://apigee.googleapis.com/v1/organizations/${{secrets.APIGEE_ORG}}/apis?action=import&name=hello-world\" --silent | jq --raw-output .revision)\" >> $GITHUB_OUTPUT"
-      - name: Deploy Revision
+      - name: Deploy Revision to environment
         run: "curl \"https://apigee.googleapis.com/v1/organizations/${{ secrets.APIGEE_ORG }}/environments/eval/apis/hello-world/revisions/${{steps.upload.outputs.apigee-revision}}/deployments?override=true\" -X POST -H \"Authorization: Bearer ${{steps.auth.outputs.access_token}}\""
-        
+      - name: API deployed successfully
+        run: "echo deployed successfully"
