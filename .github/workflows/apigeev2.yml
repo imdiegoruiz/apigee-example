@@ -45,9 +45,9 @@ jobs:
         run: "echo \"apigee-revision=$(curl --fail -X POST -H \"Content-Type: multipart/form-data\" -H \"Authorization: Bearer ${{steps.auth.outputs.access_token}}\" -F \"file=@proxy.zip\" \"https://apigee.googleapis.com/v1/organizations/${{secrets.APIGEE_ORG}}/apis?action=import&name=hello-world\" --silent | jq --raw-output .revision)\" >> $GITHUB_OUTPUT"
       - name: Deploy Revision to environment
         id: deploy
-        run: "echo \"deploy-start-time=$(curl \"https://apigee.googleapis.com/v1/organizations/${{ secrets.APIGEE_ORG }}/environments/dev/apis/hello-world/revisions/${{steps.upload.outputs.apigee-revision}}/deployments?override=true\" -X POST -H \"Authorization: Bearer ${{steps.auth.outputs.access_token}}\" --silent | jq --raw-output .deployStartTime)\" >> $GITHUB_OUTPUT"
+        run: "curl \"https://apigee.googleapis.com/v1/organizations/${{ secrets.APIGEE_ORG }}/environments/dev/apis/hello-world/revisions/${{steps.upload.outputs.apigee-revision}}/deployments?override=true\" -X POST -H \"Authorization: Bearer ${{steps.auth.outputs.access_token}}\" --silent | jq"
       - name: Checking API deployment
         id: check-deploy
         run: "echo \"deploy-status-get=$(curl \"https://apigee.googleapis.com/v1/organizations/${{ secrets.APIGEE_ORG }}/environments/dev/apis/hello-world/revisions/${{steps.upload.outputs.apigee-revision}}/deployments\" -X GET -H \"Authorization: Bearer ${{steps.auth.outputs.access_token}}\" --silent | jq --raw-output .state)\" >> $GITHUB_OUTPUT"
       - name: Checking results
-        run: "echo at time: ${{steps.deploy.outputs.deploy-start-time}} - State: ${{steps.check-deploy.outputs.deploy-status-get}}"
+        run: "echo State: ${{steps.check-deploy.outputs.deploy-status-get}}"
