@@ -48,4 +48,6 @@ jobs:
         run: "echo \"deploy-start-time=$(curl \"https://apigee.googleapis.com/v1/organizations/${{ secrets.APIGEE_ORG }}/environments/dev/apis/hello-world/revisions/${{steps.upload.outputs.apigee-revision}}/deployments?override=true\" -X POST -H \"Authorization: Bearer ${{steps.auth.outputs.access_token}}\" --silent | jq --raw-output .deployStartTime)\" >> $GITHUB_OUTPUT"
       - name: Checking API deployment
         id: check-deploy
-        run: "echo \"deploy-status-get=$(curl \"https://apigee.googleapis.com/v1/organizations/${{ secrets.APIGEE_ORG }}/environments/dev/apis/hello-world/revisions/${{steps.upload.outputs.apigee-revision}}/deployments\" -X GET -H \"Authorization: Bearer ${{steps.auth.outputs.access_token}}\" --silent | jq --raw-output .state)\" >> $GITHUB_OUTPUT echo ${{steps.deploy.outputs.deploy-status}}"
+        run: "echo \"deploy-status-get=$(curl \"https://apigee.googleapis.com/v1/organizations/${{ secrets.APIGEE_ORG }}/environments/dev/apis/hello-world/revisions/${{steps.upload.outputs.apigee-revision}}/deployments\" -X GET -H \"Authorization: Bearer ${{steps.auth.outputs.access_token}}\" --silent | jq --raw-output .state)\" >> $GITHUB_OUTPUT"
+      - name: Checking results
+        run: "echo at time: ${{steps.deploy.outputs.deploy-start-time}} - State: ${{steps.check-deploy.outputs.deploy-status-get}}"
