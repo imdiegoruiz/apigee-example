@@ -47,9 +47,10 @@ jobs:
         id: deploy
         run: "echo \"deploy-status=$(curl \"https://apigee.googleapis.com/v1/organizations/${{ secrets.APIGEE_ORG }}/environments/dev/apis/hello-world/revisions/${{steps.upload.outputs.apigee-revision}}/deployments?override=true\" -X POST -H \"Authorization: Bearer ${{steps.auth.outputs.access_token}}\" --silent | jq --raw-output .environment)\" >> $GITHUB_OUTPUT"
       - name: API deployed successfully
-        run: "echo deployed successfully"
+        id: check-deploy
+        run: "echo \"deploy-status-get=$(curl \"https://apigee.googleapis.com/v1/organizations/${{ secrets.APIGEE_ORG }}/environments/dev/apis/hello-world/revisions/${{steps.upload.outputs.apigee-revision}}/deployments\" -X GET -H \"Authorization: Bearer ${{steps.auth.outputs.access_token}}\" --silent | jq --raw-output .state)\" >> $GITHUB_OUTPUT"
       - name: Set output
         id: val
-        run: echo "name=diego" >> $GITHUB_OUTPUT
+        run: echo ${{steps.check-deploy.outputs.deploy-status-get}}
       - name: Print my output deploy status
         run: echo ${{steps.deploy.outputs.deploy-status}}
