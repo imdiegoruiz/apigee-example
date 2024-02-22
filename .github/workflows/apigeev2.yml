@@ -33,11 +33,12 @@ jobs:
         id: auth
         uses: google-github-actions/auth@v2
         with:
-          token_format: "access_token"
-          create_credentials_file: true
-          activate_credentials_file: true
+          #token_format: "access_token"
+          #create_credentials_file: true
+          #activate_credentials_file: true
+          project_id: ${{ secrets.APIGEE_ORG }}
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_POOL_ID }}
-          service_account: ${{ secrets.SERVICE_ACCOUNT }}
+         # service_account: ${{ secrets.SERVICE_ACCOUNT }}
       - name: Create API bundle
         run: zip -r proxy.zip apiproxy
       - name: Upload API Proxy Bundle
