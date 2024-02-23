@@ -14,7 +14,7 @@
  limitations under the License.
 -->
 
-<APIProxy revision="1" name="hello-world">
+<APIProxy revision="1" name="hello-world-ga">
     <DisplayName></DisplayName>
     <Description></Description>
     <CreatedAt>1642755207215</CreatedAt>
