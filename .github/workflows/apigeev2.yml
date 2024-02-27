@@ -26,21 +26,6 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
-      - name: Test printing
-        shell: bash
-        run: |
-
-          # define variables      
-          tests=16
-          failures=2
-
-          # set them as GitHub ENV variables
-          echo "Tests=$tests" >> $GITHUB_ENV
-          echo "Failures=$failures" >> $GITHUB_ENV
-
-          # retrieve these GitHub ENV variables
-          echo "${{ env.Failures }} out of ${{ env.Tests }} tests failed on CI"
-          # Runs a single command using the runners shell
 
       - name: Auth with Google
         id: auth
@@ -52,6 +37,8 @@ jobs:
           project_id: ${{ secrets.APIGEE_ORG }}
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_POOL_ID }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
+      - name: Setworkspace
+        run:  env | grep "^build_" > /workspace/build_vars
       - name: Running mvn command
         run:  mvn -f pom.xml -ntp process-resources apigee-enterprise:configure -Pdev -Dorg=${{ secrets.APIGEE_ORG }} -Denv=${{ secrets.APIGEE_ENV }}
       - name: Deploy Bundle 
