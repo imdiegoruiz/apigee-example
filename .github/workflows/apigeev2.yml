@@ -37,10 +37,8 @@ jobs:
           project_id: ${{ secrets.APIGEE_ORG }}
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_POOL_ID }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
-      - name: Setworkspace
-        run:  env | grep "^build_" > /workspace/build_vars
       - name: Running mvn command
-        run:  mvn -f pom.xml -ntp process-resources apigee-enterprise:configure -Pdev -Dorg=${{ secrets.APIGEE_ORG }} -Denv=${{ secrets.APIGEE_ENV }}
+        run:  mvn -f pom.xml -ntp process-resources apigee-enterprise:configure -Pprod -Dorg=${{ secrets.APIGEE_ORG }} -Denv=${{ secrets.APIGEE_ENV }}
       - name: Deploy Bundle 
         id: deploy
-        run: mvn -f pom.xml -ntp apigee-enterprise:deploy -Pdev -Dorg=${{ secrets.APIGEE_ORG }} -Denv=${{ secrets.APIGEE_ENV }} -Dbearer=${{steps.auth.outputs.access_token}}
+        run: mvn -f pom.xml -ntp apigee-enterprise:deploy -Pprod -Dorg=${{ secrets.APIGEE_ORG }} -Denv=${{ secrets.APIGEE_ENV }} -Dbearer=${{steps.auth.outputs.access_token}}
